@@ -1,6 +1,7 @@
 # Secure Headers Scrutinizer 🛡️
 
 A Chrome Extension built to provide a **real-time security audit** of a web application's server-side hardening by analyzing its HTTP response headers. This tool aids in identifying critical security misconfigurations that leave websites vulnerable to common client-side attacks.
+<img width="555" height="470" alt="image" src="https://github.com/user-attachments/assets/3cb1092b-a398-447e-bd83-79c3ba2efbb1" />
 
 ## 💡 Project Goal
 
