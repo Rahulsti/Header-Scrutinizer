@@ -1,46 +1,49 @@
 # Secure Headers Scrutinizer 🛡️
 
-A Chrome Extension built to provide a **real-time security audit** of a web application's server-side hardening by analyzing its HTTP response headers. This tool aids in identifying critical security misconfigurations that leave websites vulnerable to common client-side attacks.
-<img width="555" height="470" alt="image" src="https://github.com/user-attachments/assets/3cb1092b-a398-447e-bd83-79c3ba2efbb1" />
+A Chrome extension (Manifest V3) that audits any website's HTTP security headers in real time and gives it a security score. With one click you can see whether a site defends against XSS, clickjacking, MIME sniffing and protocol downgrade attacks.
 
-## 💡 Project Goal
+<img width="555" height="470" alt="Extension popup showing the header analysis" src="https://github.com/user-attachments/assets/3cb1092b-a398-447e-bd83-79c3ba2efbb1" />
 
-The project's primary goal is to shift security auditing left by making it easy to confirm that a web server is implementing **Defense-in-Depth** policies required for modern web security (e.g., OWASP standards).
+## What it checks
 
-## ✨ Features
+| Header | Protects against |
+| --- | --- |
+| `Content-Security-Policy` | Cross-site scripting (XSS) and content injection |
+| `Strict-Transport-Security` | HTTPS downgrade and SSL-stripping attacks |
+| `X-Content-Type-Options` | MIME-type sniffing |
+| `X-Frame-Options` | Clickjacking |
 
-* **Real-Time Auditing:** Analyzes headers upon page load using the `chrome.webRequest` API.
-* **Security Scorecard:** Calculates a simple percentage score based on the completeness of the analyzed headers.
-* **Defense-in-Depth Check:** Scrutinizes the presence and status of four critical security headers:
-    * `Content-Security-Policy` (CSP)
-    * `Strict-Transport-Security` (HSTS)
-    * `X-Content-Type-Options`
-    * `X-Frame-Options`
+Each header is marked **PASS** or **FAIL** along with its value. The score is the percentage of these headers the site sends: 4 of 4 is 100%, 2 of 4 is 50%.
 
-## ⚙️ Technical Skills Demonstrated
+## How it works
 
-* **Application Security (AppSec):** Deep understanding of XSS, Clickjacking, and MIME sniffing attack mitigation.
-* **Network Protocols:** Mastery of the **HTTP protocol** and debugging network interactions using Chrome's advanced `webRequest` API.
-* **Extension Development (Manifest V3):** Implementation and debugging of **Service Workers** and local `storage` for inter-script communication.
-* **Debugging/Troubleshooting:** Successfully implemented the **`extraHeaders`** flag to bypass Chrome's default security model and gain access to hidden network security data.
+1. `background.js` (service worker) listens to `chrome.webRequest.onHeadersReceived` for main-page loads only.
+2. It compares the response headers, case-insensitively, against the four security headers, works out the score and saves the result per hostname in `chrome.storage.local`.
+3. Clicking the extension icon opens `popup.html`. `popup.js` reads the stored result for the current tab and shows the score and a PASS/FAIL table.
 
-## 🚀 Installation and Usage
+The `extraHeaders` option is used so Chrome exposes the full set of response headers to the extension.
 
-1.  **Clone the Repository:**
-    ```bash
-    git clone [https://github.com/Rahulsti/Header-Scrutinizer.git](https://github.com/Rahulsti/Header-Scrutinizer.git)
-    ```
-2.  **Open Chrome:** Navigate to `chrome://extensions`.
-3.  **Enable Developer Mode** (toggle in the top right).
-4.  Click **"Load unpacked."**
-5.  Select the **`HeaderScrutinizer`** folder.
-6.  **Usage:** Navigate to any website and click the extension icon to view the security score and header breakdown. *(Note: A hard refresh (Ctrl+Shift+R) may be needed to ensure the Service Worker captures the latest headers.)*
+## Installation
 
-## 🧑‍💻 File Structure
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Rahulsti/Header-Scrutinizer.git
+   ```
+2. Open `chrome://extensions` in Chrome.
+3. Turn on **Developer mode** (top right).
+4. Click **Load unpacked** and select the `Header-Scrutinizer` folder.
+5. Open any website, hard-reload it (`Ctrl+Shift+R`), then click the extension icon.
+
+## Project structure
 
 | File | Role |
-| :--- | :--- |
-| `manifest.json` | Defines permissions (`webRequest`, `storage`) and registers the Service Worker. |
-| `background.js` | The **Service Worker**. Intercepts headers and stores the results in Chrome storage. |
-| `popup.html` | The user interface displayed upon clicking the extension icon. |
-| `popup.js` | Fetches analysis data from storage and renders the table and score. |
+| --- | --- |
+| `manifest.json` | Manifest V3 config: `webRequest`, `storage` and `activeTab` permissions, and the service worker |
+| `background.js` | Captures the headers, scores them and stores the results |
+| `popup.html` | Popup UI |
+| `popup.js` | Reads the stored results and renders the score and table |
+| `icons/` | Extension icons |
+
+## Tech stack
+
+JavaScript · Chrome Extensions API (Manifest V3) · `webRequest` · `chrome.storage`
